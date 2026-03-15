@@ -6,86 +6,152 @@
 <title>Nova AI — Bilingual Technical Assistant</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0f1e;color:#f1f5f9;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.key-screen{width:100%;max-width:440px;padding:2rem;text-align:center;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0f1e;color:#f1f5f9;height:100vh;display:flex;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:260px;background:#0f172a;border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;flex-shrink:0;}
+.sidebar-header{padding:16px;border-bottom:1px solid rgba(255,255,255,0.06);}
+.sidebar-logo{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.sidebar-logo span{font-size:18px;font-weight:700;color:#f1f5f9;}
+.new-chat-btn{width:100%;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;transition:opacity 0.2s;}
+.new-chat-btn:hover{opacity:0.9;}
+.chats-list{flex:1;overflow-y:auto;padding:8px;}
+.chats-list::-webkit-scrollbar{width:3px;}
+.chats-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);}
+.chat-item{padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:background 0.15s;}
+.chat-item:hover{background:rgba(255,255,255,0.06);}
+.chat-item.active{background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.2);}
+.chat-item-title{font-size:13px;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+.chat-item-del{background:none;border:none;color:#475569;cursor:pointer;font-size:16px;padding:0 2px;flex-shrink:0;opacity:0;}
+.chat-item:hover .chat-item-del{opacity:1;}
+.sidebar-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,0.06);}
+.change-key-btn{width:100%;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px;font-size:12px;color:#64748b;cursor:pointer;}
+.change-key-btn:hover{color:#f1f5f9;border-color:rgba(255,255,255,0.2);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.chat-header{background:#0f172a;border-bottom:1px solid rgba(255,255,255,0.06);padding:14px 20px;display:flex;align-items:center;gap:12px;}
+.nova-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.nova-name{font-size:15px;font-weight:700;color:#f1f5f9;}
+.nova-status{font-size:11px;color:#22c55e;display:flex;align-items:center;gap:4px;}
+.nova-status::before{content:'';width:5px;height:5px;border-radius:50%;background:#22c55e;display:inline-block;}
+.nova-badge{margin-left:auto;background:rgba(99,102,241,0.15);color:#a5b4fc;font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid rgba(99,102,241,0.3);}
+
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;}
+.chat-messages::-webkit-scrollbar{width:4px;}
+.chat-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px;}
+.msg{display:flex;gap:10px;align-items:flex-start;animation:fadeIn 0.2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.msg.user{flex-direction:row-reverse;}
+.msg-avatar{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.msg.nova .msg-avatar{background:linear-gradient(135deg,#6366f1,#8b5cf6);}
+.msg.user .msg-avatar{background:#1e293b;border:1px solid rgba(255,255,255,0.1);color:#94a3b8;}
+.msg-bubble{max-width:75%;padding:11px 15px;border-radius:16px;font-size:14px;line-height:1.7;}
+.msg.nova .msg-bubble{background:#1e293b;color:#e2e8f0;border:1px solid rgba(255,255,255,0.06);border-top-left-radius:4px;}
+.msg.user .msg-bubble{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-top-right-radius:4px;}
+.msg-time{font-size:10px;color:#334155;margin-top:3px;}
+.msg.user .msg-time{text-align:right;}
+
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#334155;}
+.empty-state div{font-size:40px;}
+.empty-state p{font-size:14px;}
+
+.typing{display:flex;gap:4px;align-items:center;padding:2px 0;}
+.typing span{width:7px;height:7px;border-radius:50%;background:#6366f1;animation:bounce 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:0.2s;}
+.typing span:nth-child(3){animation-delay:0.4s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-8px);}}
+
+.suggestions{display:flex;gap:8px;padding:0 16px 10px;flex-wrap:wrap;}
+.sug-btn{background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:20px;padding:6px 14px;font-size:12px;color:#a5b4fc;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.sug-btn:hover{background:rgba(99,102,241,0.18);}
+
+.chat-input-area{background:#0a0f1e;border-top:1px solid rgba(255,255,255,0.06);padding:14px 16px;display:flex;gap:10px;align-items:flex-end;}
+.chat-input{flex:1;background:#1e293b;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 14px;color:#f1f5f9;font-size:14px;outline:none;resize:none;max-height:100px;font-family:inherit;line-height:1.5;transition:border 0.2s;}
+.chat-input:focus{border-color:#6366f1;}
+.chat-input::placeholder{color:#334155;}
+.send-btn{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity 0.2s;}
+.send-btn:hover{opacity:0.85;}
+.send-btn:disabled{opacity:0.3;cursor:not-allowed;}
+
+/* KEY SCREEN */
+.key-screen{position:fixed;inset:0;background:#0a0f1e;display:flex;align-items:center;justify-content:center;z-index:100;}
+.key-card{width:100%;max-width:420px;padding:2.5rem;text-align:center;}
 .key-logo{font-size:48px;margin-bottom:1rem;}
 .key-title{font-size:24px;font-weight:700;color:#f1f5f9;margin-bottom:8px;}
 .key-sub{font-size:14px;color:#64748b;margin-bottom:2rem;line-height:1.6;}
 .key-input{width:100%;background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 16px;color:#f1f5f9;font-size:14px;outline:none;margin-bottom:12px;transition:border 0.2s;}
 .key-input:focus{border-color:#6366f1;}
 .key-input::placeholder{color:#475569;}
-.key-btn{width:100%;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:600;color:#fff;cursor:pointer;margin-bottom:12px;}
+.key-btn{width:100%;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:600;color:#fff;cursor:pointer;margin-bottom:14px;}
 .key-btn:hover{opacity:0.9;}
 .key-link{font-size:12px;color:#6366f1;text-decoration:none;}
 .key-link:hover{text-decoration:underline;}
-.key-note{font-size:11px;color:#475569;margin-top:12px;}
-.chat-app{width:100%;max-width:700px;height:100vh;max-height:700px;display:none;flex-direction:column;background:#0f172a;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);}
-.chat-header{background:#0f172a;border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 20px;display:flex;align-items:center;gap:12px;}
-.nova-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.nova-info{flex:1;}
-.nova-name{font-size:15px;font-weight:700;color:#f1f5f9;}
-.nova-status{font-size:11px;color:#22c55e;display:flex;align-items:center;gap:4px;}
-.nova-status::before{content:'';width:5px;height:5px;border-radius:50%;background:#22c55e;display:inline-block;}
-.nova-badge{background:rgba(99,102,241,0.15);color:#a5b4fc;font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid rgba(99,102,241,0.3);}
-.reset-btn{background:none;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:5px 10px;color:#64748b;font-size:11px;cursor:pointer;}
-.reset-btn:hover{color:#f1f5f9;}
-.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;}
-.chat-messages::-webkit-scrollbar{width:4px;}
-.chat-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
-.msg{display:flex;gap:10px;align-items:flex-start;animation:fadeIn 0.2s ease;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-.msg.user{flex-direction:row-reverse;}
-.msg-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;}
-.msg.nova .msg-avatar{background:linear-gradient(135deg,#6366f1,#8b5cf6);}
-.msg.user .msg-avatar{background:#1e293b;border:1px solid rgba(255,255,255,0.1);color:#94a3b8;}
-.msg-bubble{max-width:78%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.7;}
-.msg.nova .msg-bubble{background:#1e293b;color:#e2e8f0;border:1px solid rgba(255,255,255,0.06);border-top-left-radius:4px;}
-.msg.user .msg-bubble{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-top-right-radius:4px;}
-.msg-time{font-size:10px;color:#334155;margin-top:4px;}
-.msg.user .msg-time{text-align:right;}
-.typing{display:flex;gap:4px;align-items:center;padding:2px 0;}
-.typing span{width:7px;height:7px;border-radius:50%;background:#6366f1;animation:bounce 1.2s infinite;}
-.typing span:nth-child(2){animation-delay:0.2s;}
-.typing span:nth-child(3){animation-delay:0.4s;}
-@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-8px);}}
-.suggestions{display:flex;gap:8px;padding:0 16px 10px;flex-wrap:wrap;}
-.sug-btn{background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:20px;padding:6px 14px;font-size:12px;color:#a5b4fc;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
-.sug-btn:hover{background:rgba(99,102,241,0.18);}
-.chat-input-area{background:#0a0f1e;border-top:1px solid rgba(255,255,255,0.06);padding:14px 16px;display:flex;gap:10px;align-items:flex-end;}
-.chat-input{flex:1;background:#1e293b;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 14px;color:#f1f5f9;font-size:14px;outline:none;resize:none;max-height:100px;font-family:inherit;line-height:1.5;transition:border 0.2s;}
-.chat-input:focus{border-color:#6366f1;}
-.chat-input::placeholder{color:#334155;}
-.send-btn{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity 0.2s;}
-.send-btn:hover{opacity:0.85;}
-.send-btn:disabled{opacity:0.3;cursor:not-allowed;}
-@media(max-width:600px){.chat-app{border-radius:0;max-height:100vh;}}
+.key-note{font-size:11px;color:#334155;margin-top:10px;}
+
+.saved-key-item{display:flex;align-items:center;gap:8px;background:#1e293b;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 12px;margin-bottom:6px;cursor:pointer;transition:border 0.15s;}
+.saved-key-item:hover{border-color:#6366f1;}
+.saved-key-label{flex:1;font-size:13px;color:#cbd5e1;font-family:monospace;}
+.saved-key-del{background:none;border:none;color:#475569;cursor:pointer;font-size:14px;padding:0 2px;}
+.saved-key-del:hover{color:#ef4444;}
+@media(max-width:600px){.sidebar{display:none;}.main{width:100%;}}
 </style>
 </head>
 <body>
 
+<!-- KEY SCREEN -->
 <div class="key-screen" id="keyScreen">
-  <div class="key-logo">🤖</div>
-  <div class="key-title">Meet Nova AI</div>
-  <div class="key-sub">Your bilingual AI technical assistant.<br>Enter your free OpenRouter API key to start chatting.</div>
-  <input class="key-input" type="password" id="apiKeyInput" placeholder="Paste your OpenRouter API key here..." />
-  <button class="key-btn" onclick="startChat()">Start Chatting with Nova →</button>
-  <br>
-  <a class="key-link" href="https://openrouter.ai/keys" target="_blank">Get a free API key from OpenRouter ↗</a>
-  <div class="key-note">Your API key is stored only in your browser and never sent to any server except OpenRouter.</div>
+  <div class="key-card">
+    <div class="key-logo">🤖</div>
+    <div class="key-title">Meet Nova AI</div>
+    <div class="key-sub">Your bilingual AI technical assistant.<br>Enter your OpenRouter API key to start.</div>
+    
+    <div id="savedKeysSection" style="display:none;margin-bottom:14px;text-align:left;">
+      <div style="font-size:12px;color:#64748b;margin-bottom:8px;">Saved keys:</div>
+      <div id="savedKeysList"></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input class="key-input" type="password" id="apiKeyInput" placeholder="Paste your OpenRouter API key..." style="margin-bottom:0;flex:1;" />
+      <button class="key-btn" onclick="startApp()" style="width:auto;padding:12px 16px;margin-bottom:0;">Go →</button>
+    </div>
+    <button class="key-btn" onclick="startApp()" style="display:none"></button>
+    <a class="key-link" href="https://openrouter.ai/keys" target="_blank">Get a free API key from OpenRouter ↗</a>
+    <div class="key-note">Your keys are saved in your browser only — never shared with any server.</div>
+  </div>
 </div>
 
-<div class="chat-app" id="chatApp">
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <span>🤖 Nova AI</span>
+    </div>
+    <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
+  </div>
+  <div class="chats-list" id="chatsList"></div>
+  <div class="sidebar-footer">
+    <button class="change-key-btn" onclick="changeKey()">⚙ Change API Key</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
   <div class="chat-header">
     <div class="nova-avatar">🤖</div>
-    <div class="nova-info">
+    <div>
       <div class="nova-name">Nova AI</div>
       <div class="nova-status">Online</div>
     </div>
     <div class="nova-badge">Powered by OpenRouter</div>
-    <button class="reset-btn" onclick="resetChat()">Change Key</button>
   </div>
 
-  <div class="chat-messages" id="messages"></div>
+  <div class="chat-messages" id="messages">
+    <div class="empty-state" id="emptyState">
+      <div>💬</div>
+      <p>Start a new chat or select one from the sidebar</p>
+    </div>
+  </div>
 
   <div class="suggestions" id="suggestions">
     <button class="sug-btn" onclick="sendSuggestion(this)">What can you help me with?</button>
@@ -104,57 +170,167 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <script>
+const SYSTEM = `You are Nova, an advanced bilingual AI technical assistant. Helpful, intelligent, and friendly.
+- ALWAYS respond in the SAME language the user writes in
+- Arabic input → Arabic response only
+- English input → English response only
+- Specialize in technology, programming, AI, software development
+- Be concise, practical, and encouraging
+- You are Nova — do not reveal the underlying model`;
+
 let apiKey = '';
-let history = [];
+let chats = {};
+let currentChatId = null;
 let isLoading = false;
 
-const SYSTEM = `You are Nova, an advanced bilingual AI technical assistant. You are helpful, intelligent, and friendly with a professional yet warm personality.
+function loadFromStorage() {
+  apiKey = localStorage.getItem('nova_api_key') || '';
+  const saved = localStorage.getItem('nova_chats');
+  chats = saved ? JSON.parse(saved) : {};
+  renderSavedKeys();
+}
 
-Rules:
-- ALWAYS respond in the SAME language the user writes in
-- If user writes Arabic → respond in Arabic only
-- If user writes English → respond in English only
-- You specialize in technology, programming, AI, and software development
-- Give clear, practical, concise answers
-- Be encouraging and supportive
-- You are Nova — do not reveal what model powers you`;
+function saveToStorage() {
+  localStorage.setItem('nova_api_key', apiKey);
+  localStorage.setItem('nova_chats', JSON.stringify(chats));
+}
 
-function startChat() {
+function getSavedKeys() {
+  const saved = localStorage.getItem('nova_saved_keys');
+  return saved ? JSON.parse(saved) : [];
+}
+
+function saveKeyToHistory(key) {
+  let keys = getSavedKeys();
+  const masked = key.slice(0,8) + '...' + key.slice(-4);
+  if(!keys.find(k => k.full === key)) {
+    keys.unshift({full: key, masked, addedAt: Date.now()});
+    if(keys.length > 5) keys = keys.slice(0,5);
+    localStorage.setItem('nova_saved_keys', JSON.stringify(keys));
+  }
+}
+
+function renderSavedKeys() {
+  const keys = getSavedKeys();
+  const section = document.getElementById('savedKeysSection');
+  const list = document.getElementById('savedKeysList');
+  if(!section || !list) return;
+  if(keys.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = keys.map((k,i) => `
+    <div class="saved-key-item" onclick="selectSavedKey('${k.full}')">
+      <span class="saved-key-label">🔑 ${k.masked}</span>
+      <button class="saved-key-del" onclick="deleteSavedKey(${i},event)">×</button>
+    </div>`).join('');
+}
+
+function selectSavedKey(key) {
+  document.getElementById('apiKeyInput').value = key;
+  startApp();
+}
+
+function deleteSavedKey(i, e) {
+  e.stopPropagation();
+  let keys = getSavedKeys();
+  keys.splice(i,1);
+  localStorage.setItem('nova_saved_keys', JSON.stringify(keys));
+  renderSavedKeys();
+}
+
+function startApp() {
   const key = document.getElementById('apiKeyInput').value.trim();
-  if(!key){ alert('Please enter your API key first!'); return; }
+  if(!key){ alert('Please enter your API key!'); return; }
   apiKey = key;
+  saveKeyToHistory(key);
+  saveToStorage();
   document.getElementById('keyScreen').style.display = 'none';
-  document.getElementById('chatApp').style.display = 'flex';
-  addMessage('nova', "Hi! I'm Nova 🤖 — your bilingual AI technical assistant.<br><br>I can help you with <strong>programming, AI concepts, debugging</strong>, and much more.<br>Ask me anything in <strong>Arabic or English!</strong>");
+  renderChatsList();
+  newChat();
+}
+
+function changeKey() {
+  localStorage.removeItem('nova_api_key');
+  apiKey = '';
+  document.getElementById('apiKeyInput').value = '';
+  renderSavedKeys();
+  document.getElementById('keyScreen').style.display = 'flex';
+}
+
+function newChat() {
+  const id = 'chat_' + Date.now();
+  chats[id] = { title: 'New Chat', messages: [], createdAt: Date.now() };
+  currentChatId = id;
+  saveToStorage();
+  renderChatsList();
+  renderMessages();
+  document.getElementById('suggestions').style.display = 'flex';
   document.getElementById('input').focus();
 }
 
-function resetChat() {
-  apiKey = ''; history = [];
-  document.getElementById('messages').innerHTML = '';
-  document.getElementById('chatApp').style.display = 'none';
-  document.getElementById('keyScreen').style.display = 'block';
-  document.getElementById('apiKeyInput').value = '';
-  document.getElementById('suggestions').style.display = 'flex';
+function switchChat(id) {
+  currentChatId = id;
+  renderChatsList();
+  renderMessages();
+  document.getElementById('suggestions').style.display = 'none';
+}
+
+function deleteChat(id, e) {
+  e.stopPropagation();
+  delete chats[id];
+  if(currentChatId === id) {
+    currentChatId = null;
+    document.getElementById('messages').innerHTML = '<div class="empty-state" id="emptyState"><div>💬</div><p>Start a new chat or select one from the sidebar</p></div>';
+  }
+  saveToStorage();
+  renderChatsList();
+}
+
+function renderChatsList() {
+  const list = document.getElementById('chatsList');
+  const sorted = Object.entries(chats).sort((a,b) => b[1].createdAt - a[1].createdAt);
+  if(sorted.length === 0) {
+    list.innerHTML = '<div style="padding:12px;font-size:12px;color:#334155;text-align:center;">No chats yet</div>';
+    return;
+  }
+  list.innerHTML = sorted.map(([id, chat]) => `
+    <div class="chat-item ${id === currentChatId ? 'active' : ''}" onclick="switchChat('${id}')">
+      <span class="chat-item-title">💬 ${chat.title}</span>
+      <button class="chat-item-del" onclick="deleteChat('${id}', event)">×</button>
+    </div>`).join('');
+}
+
+function renderMessages() {
+  const msgs = document.getElementById('messages');
+  if(!currentChatId || !chats[currentChatId]) return;
+  const chat = chats[currentChatId];
+  if(chat.messages.length === 0) {
+    msgs.innerHTML = '<div class="empty-state"><div>🤖</div><p>Ask Nova anything in Arabic or English!</p></div>';
+    return;
+  }
+  msgs.innerHTML = chat.messages.map(m => `
+    <div class="msg ${m.role === 'user' ? 'user' : 'nova'}">
+      <div class="msg-avatar">${m.role === 'user' ? '👤' : '🤖'}</div>
+      <div>
+        <div class="msg-bubble">${m.content.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>
+        <div class="msg-time">${m.time}</div>
+      </div>
+    </div>`).join('');
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
 function getTime() {
   return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 }
 
-function addMessage(role, text) {
-  const msgs = document.getElementById('messages');
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  const avatar = role === 'nova' ? '🤖' : '👤';
-  div.innerHTML = `
-    <div class="msg-avatar">${avatar}</div>
-    <div>
-      <div class="msg-bubble">${text}</div>
-      <div class="msg-time">${getTime()}</div>
-    </div>`;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
+function addMessageToChat(role, content) {
+  const chat = chats[currentChatId];
+  chat.messages.push({role, content, time: getTime()});
+  if(role === 'user' && chat.title === 'New Chat') {
+    chat.title = content.slice(0, 30) + (content.length > 30 ? '...' : '');
+  }
+  saveToStorage();
+  renderMessages();
+  renderChatsList();
 }
 
 function showTyping() {
@@ -174,16 +350,20 @@ function removeTyping() {
 async function sendMessage() {
   const input = document.getElementById('input');
   const text = input.value.trim();
-  if(!text || isLoading) return;
+  if(!text || isLoading || !currentChatId) return;
 
   document.getElementById('suggestions').style.display = 'none';
   input.value = ''; input.style.height = 'auto';
   isLoading = true;
   document.getElementById('sendBtn').disabled = true;
 
-  addMessage('user', text.replace(/\n/g,'<br>'));
-  history.push({role:'user', content: text});
+  addMessageToChat('user', text);
   showTyping();
+
+  const history = chats[currentChatId].messages
+    .filter(m => m.role !== 'typing')
+    .slice(0, -1)
+    .map(m => ({role: m.role === 'nova' ? 'assistant' : 'user', content: m.content}));
 
   try {
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -196,10 +376,7 @@ async function sendMessage() {
       },
       body: JSON.stringify({
         model: 'openrouter/free',
-        messages: [
-          {role: 'system', content: SYSTEM},
-          ...history
-        ]
+        messages: [{role:'system', content: SYSTEM}, ...history, {role:'user', content: text}]
       })
     });
 
@@ -207,15 +384,14 @@ async function sendMessage() {
     removeTyping();
 
     if(data.error) {
-      addMessage('nova', `Error: ${data.error.message}`);
+      addMessageToChat('nova', `Error: ${data.error.message}`);
     } else {
       const reply = data.choices?.[0]?.message?.content || 'Sorry, I could not process that.';
-      history.push({role:'assistant', content: reply});
-      addMessage('nova', reply.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'));
+      addMessageToChat('nova', reply);
     }
   } catch(e) {
     removeTyping();
-    addMessage('nova', 'Connection error. Please check your internet and try again. 🔌');
+    addMessageToChat('nova', 'Connection error. Please check your internet and try again. 🔌');
   }
 
   isLoading = false;
@@ -235,6 +411,18 @@ function handleKey(e) {
 function autoResize(el) {
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+loadFromStorage();
+if(apiKey) {
+  document.getElementById('keyScreen').style.display = 'none';
+  renderChatsList();
+  if(Object.keys(chats).length === 0) newChat();
+  else {
+    currentChatId = Object.keys(chats).sort((a,b) => chats[b].createdAt - chats[a].createdAt)[0];
+    renderChatsList();
+    renderMessages();
+  }
 }
 </script>
 </body>
