@@ -242,7 +242,8 @@ function startApp() {
   if(!key){ alert('Please enter your API key!'); return; }
   apiKey = key;
   saveKeyToHistory(key);
-  saveToStorage();
+  localStorage.setItem('nova_api_key', apiKey);
+  localStorage.setItem('nova_chats', JSON.stringify(chats));
   document.getElementById('keyScreen').style.display = 'none';
   renderChatsList();
   newChat();
